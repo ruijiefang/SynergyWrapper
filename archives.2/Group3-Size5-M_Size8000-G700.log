@@ -1,0 +1,90 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:5
+ # SIZE:8000
+ # G:   700
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 700[0]
+Sending part 1400[1]
+Sending part 2100[2]
+Sending part 2800[3]
+Sending part 3500[4]
+Sending part 4200[5]
+Sending part 4900[6]
+Sending part 5600[7]
+Sending part 6300[8]
+Sending part 7000[9]
+Sending part 7700[10]
+master: synchronizing
+Client[2]: sending back to master
+Client[3]: sending back to master
+Client[4]: sending back to master
+Client[1]: sending back to master
+master: collecting remote 700[0]
+master: collecting remote 1400[1]
+master: collecting remote 2100[2]
+master: collecting remote 2800[3]
+master: collecting remote 3500[4]
+master: collecting remote 4200[5]
+master: collecting remote 4900[6]
+master: collecting remote 5600[7]
+master: collecting remote 6300[8]
+master: collecting remote 7000[9]
+master: collecting remote 7700[10]
+ === Time spent: 62.202035 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:5
+ # SIZE:8000
+ # G:   700
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 700[0]
+Sending part 1400[1]
+Sending part 2100[2]
+Sending part 2800[3]
+Sending part 3500[4]
+Sending part 4200[5]
+Sending part 4900[6]
+Sending part 5600[7]
+Sending part 6300[8]
+Sending part 7000[9]
+Sending part 7700[10]
+master: synchronizing
+Client[2]: sending back to master
+Client[4]: sending back to master
+Client[1]: sending back to master
+Client[3]: sending back to master
+master: collecting remote 700[0]
+master: collecting remote 1400[1]
+master: collecting remote 2100[2]
+master: collecting remote 2800[3]
+master: collecting remote 3500[4]
+master: collecting remote 4200[5]
+master: collecting remote 4900[6]
+master: collecting remote 5600[7]
+master: collecting remote 6300[8]
+master: collecting remote 7000[9]
+master: collecting remote 7700[10]
+ === Time spent: 63.369946 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============

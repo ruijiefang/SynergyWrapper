@@ -1,0 +1,31 @@
+Synergy4
+============
+
+Synergy4 is a framework for statistic-multiplexed, resilient and scalable high-performance computing.
+
+## Brief intro
+
+Requirements:
+	- `libzmq-4.2,libczmq-3.0+` for networking functionalities (ZeroMQ)
+	- `mongodb-dev,libbson` for parser implementation (MongoDB's bson library)
+	- `CMake > 3.5` for building
+	- POSIX-compliance for shared memory; shared memory size must be greater than 4MB.
+	- `pthreads` support
+
+The entire framework is composed of a few parts, listed below:
+	- `libzlog,libchash` supporting libraries for logging and a hash table
+	- `p2pmd` a peer-to-peer application-level routing overlay using ring topology. This guarantees maximal availability of synergy4 computation and dynamic, runtime scalability.
+	- `parser` uses `libbson` to parse an `sng-config.json` file
+	- `tsd` is the tuple-space daemon
+	- `libts` is the client-side header/static library that is linked against the user application during compile time
+	- `libcnf-compat` is a compatibility wrapper for old Synergy (Synergy 3.0-) applications. It does not support all API calls, so some modifications on the program is required.
+ (Note: `libcnf-compat` is also a header/static library that is linked against user application during compile time).
+
+To build Synergy4, make a new directory, and type in `cmake ../ && make`. 
+
+## Authors
+Synergy4 is authored by Rui-Jie Fang and Justin Y. Shi.
+
+## Contact
+
+Please contact rfang@temple.edu or shi@temple.edu for more information. 

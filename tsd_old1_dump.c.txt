@@ -1,0 +1,38 @@
+
+//----------------------------------------OLDCODE
+    if (args->this_space->ts_mode == TsModeMaster) {
+
+        args->is_master = 1;
+        zlog_debug(self->log_handle, "A Master node connected.");
+        p2pm_send_uint32(using_socket, 0, 0);
+        if (!args->this_space->is_activated) {
+            args->this_space->is_activated = 1;
+            /* now, construct a token */
+            zmsg_t *msg = zmsg_new();
+            unsigned token_id = 0;
+            int token_ttl = -1;
+            zmsg_add(msg, zframe_new(&send_token, sizeof(send_token)));
+            zmsg_add(msg, zframe_new(&token_id, sizeof(token_id)));
+            zmsg_add(msg, zframe_new(&token_ttl, sizeof(token_ttl)));
+            zmsg_add(msg, zframe_new(args->this_space_name, PSTRLEN(args->this_space_name)));
+            zmsg_add(msg, zframe_new(self->endpoint, PSTRLEN(self->endpoint)));
+            zmsg_send(&msg, self->actor_pipe);
+        }/* request matching goes in token_handler */
+        memcpy(args->this_space->direct_endpoint, self->endpoint, PSTRLEN(self->endpoint));
+        args->this_space->is_activated = 1;
+    } else if (args->this_space->is_activated) {
+        zlog_debug(self->log_handle, "Preexisting master endpoint @ %s, sending...",
+                   args->this_space->direct_endpoint);
+        p2pm_send_uint32(using_socket, 1, ZMQ_SNDMORE);
+        zlog_debug(self->log_handle, "sending string...");
+        p2pm_send_str(using_socket, args->this_space->direct_endpoint, 0);
+    } else {
+        zlog_debug(self->log_handle,
+                   "* No endpoint is existing. Blocking client until receiving a token...");
+        blocking_request_t
+                blck1 = {.clientid = args->clientid_buffer, .name=NULL, .local=args->is_local, .command=args->action};
+        zlistx_add_end(args->this_space->connect_requests, blckcpy(&blck1));
+        args->clientid_buffer = NULL;
+        p2pm_send_uint32(using_socket, 2, 0);
+    }
+    _SAFE_RETURN(0, self, args, using_socket);

@@ -1,0 +1,23 @@
+{
+  "p2pmd": {
+    "mode": "member",
+    "endpoint": "tcp://10.52.1.81:9010",
+    "successor_list": ["tcp://sng-7:9010"],
+    "predecessor": "tcp://sng-5:9010",
+    "r": 1,
+    "r_max": 5
+  },
+  "tsd": {
+    "endpoint": "tcp://10.52.1.81:8010",
+    "ipc": "ipc:///tmp/tsd1",
+    "replication_factor": 1
+  },
+  "spaces": [
+    {
+      "id" : 1,
+      "name": "/matrix",
+      "mode": "worker",
+      "tsd_mode": ["direct", "tcp://sng-1:8010"]
+    }
+  ]
+}

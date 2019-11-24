@@ -1,0 +1,987 @@
+
+int tsd_listen(tsd_t *self)
+{
+    assert(self);
+    /* now p2pmd is already running, we just have to loop & process requests */
+    sng_tuple_t search_tuple;
+    char clientid_buf[50];
+    char namespace_buf[50];
+    char useless_buf[50];
+    zmq_pollitem_t items[3] = {{.socket = self->local_socket, .events = ZMQ_POLLIN}, /* 1, local IPC socket */
+                               {.socket = self->server_socket, .events = ZMQ_POLLIN}, /* 2, TCP socket for tsd */
+                               {.socket = zsock_resolve(self->actor_pipe), .events = ZMQ_POLLIN} /*3,p2pmd socket */ };
+    int buf_read;
+    unsigned send_token = TSD_P2PMD_SEND_TOKEN;
+    zlog_debug(self->log_handle, "before do_while loop.");
+    do {
+        zlog_debug(self->log_handle, "polling...");
+        int rt = zmq_poll(items, 3, -1);
+        if (rt < 0) {
+            /* An interrupt occured! */
+            zlog_debug(self->log_handle, "tsd: received interrupt signal. Closing context and actors, quitting...");
+            puts("Interrupt received. quitting...");
+            zactor_destroy(&self->p2pmd_actor);
+            zmq_close(self->local_socket);
+            zmq_close(self->server_socket);
+            zlog_fini();
+            zmq_ctx_destroy(self->_ctx);
+            FreeHashTable(self->space_table);
+            return 0;
+        }
+        if (items[0].revents & ZMQ_POLLIN) {    /* local socket */
+            zlog_debug(self->log_handle, "received a request from local IPC transport.");
+            buf_read = zmq_recv(self->local_socket, namespace_buf, 50, 0);
+            if (buf_read < 0) {
+                zlog_debug(self->log_handle, "Error: cannot receive namespace_buf. skipping to next part...");
+                goto handle_first_error;
+            }
+            namespace_buf[buf_read] = '\0';
+            HTItem *item = HashFind(self->space_table, PTR_KEY(self->space_table, namespace_buf));
+            if (item == NULL) {
+                zlog_debug(self->log_handle, "Error: Cannot find such key %s in hash table.", namespace_buf);
+                handle_first_error:
+                zlog_debug(self->log_handle, "handling handle_first_error");
+                zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                p2pm_send_uint32(self->local_socket, TsEnf, 0);
+                /* drain the incoming socket */
+                zlog_debug(self->log_handle, "draining the incoming socket...");
+                _ts_fail(self, self->local_socket);
+                goto do_next_part;
+            }
+
+            zlog_debug(self->log_handle, "querying hash table for this_space @ %s", namespace_buf);
+            tsd_element_t *this_space = (tsd_element_t *) KEY_PTR(self->space_table, item->data);
+            const char *this_space_name = (const char *) KEY_PTR(self->space_table, item->key);
+            tuple_command_t action;
+            zlog_debug(self->log_handle, "receiving incoming action...");
+            if (p2pm_recv_uint32(self->local_socket, (uint32_t *) &action, 0) != P2PM_OP_SUCCESS) {
+                zlog_debug(self->log_handle, "Error: cannot receive incoming connection!");
+                goto handle_first_error;
+            }
+            zlog_debug(self->log_handle, "incoming connection received. (%d)", action);
+
+            if (action != TsConnect && !this_space->is_activated) { /* handle case where illegal tuple case is got */
+                zlog_debug(self->log_handle, "Error: Action %d is attempting on uncreated tuple space %s", action,
+                           namespace_buf);
+                goto handle_first_error;
+            }
+            switch (action) {
+                case TsRead_Blocking:
+                case TsGet_Blocking:
+                case TsRead:
+                case TsGet: {
+                    zlog_debug(self->log_handle, "Dispatched (TsRead|TsGet)");
+                    char *_name = NULL;
+                    zlog_debug(self->log_handle, "Receiving tuple name (string)...");
+                    rt = p2pm_recv_str(self->local_socket, &_name, 0);
+                    zlog_debug(self->log_handle, "Checking tuple name (string)...");
+                    if (rt != P2PM_OP_SUCCESS || _name == NULL) {
+                        zlog_debug(self->log_handle, "Error: no successful receive. Going to handle_first_error (%s)",
+                                   _name);
+                        goto handle_first_error; /* TODO better error handling */
+                    }
+                    zlog_debug(self->log_handle, "Searching for tuple name (%s)", _name);
+                    search_tuple.name = _name;
+                    sng_tuple_t *tpl = NULL;
+                    void *tpl_handle;
+                    if (action == TsGet || action == TsGet_Blocking) { /* if it's Get, detach item, else just read it */
+                        tpl_handle = zlistx_find(this_space->named_queue, &search_tuple);
+                        if (tpl_handle == NULL) goto tpl_nf;
+                        tpl = zlistx_detach(this_space->named_queue, tpl_handle);
+                    } else {
+                        tpl_handle = zlistx_find(this_space->named_queue, &search_tuple);
+                        if (tpl_handle == NULL) goto tpl_nf;
+                        tpl = zlistx_item(tpl_handle);
+                    }
+                    zlog_debug(self->log_handle, "Finished searching.");
+                    if (tpl == NULL) {
+                        tpl_nf:
+                        zlog_debug(self->log_handle, "ERR: Cannot find such tuple named %s", _name);
+                        if (action == TsRead_Blocking || action == TsGet_Blocking) {
+                            zlog_debug(self->log_handle, " - Is blocking request, adding...");
+                            blocking_request_t blck = {.name=_name, .command=action, .extra=0, .local = 1};
+                            zlistx_add_end(this_space->named_queue_requests, blckcpy(&blck));
+                            zlog_debug(self->log_handle, " - Finished.");
+                            /* add and do nothing */
+                            break;
+                        } else {
+                            zlog_debug(self->log_handle, " - is nonblocking request, sending ENF...");
+                            zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                            p2pm_send_uint32(self->local_socket, TsEnf, 0);
+                            break;
+                        }
+                    } else {
+                        zlog_debug(self->log_handle, "Found tuple(%s) len(%lu). Sending...", _name, tpl->len);
+
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                        p2pm_send_uint32(self->local_socket, TsMore, ZMQ_SNDMORE);
+                        p2pm_send_str(self->local_socket, tpl->name, 0);
+                        zlog_debug(self->log_handle, " - sending via shared memory...");
+                        send_item(&this_space->tsd_ts_pipe, tpl->data, tpl->len);
+                        zlog_debug(self->log_handle, "Success.");
+                    }
+                    zlog_debug(self->log_handle, "(TsRead/TsGet) success. Freeing tuples...");
+                    if (action == TsGet || action == TsGet_Blocking) {
+                        zlog_debug(self->log_handle, "Is TsGet, freeing tuple.");
+                        tplfree_g(tpl);
+                    }
+                    zlog_debug(self->log_handle, "freeing name");
+                    free(_name);
+                    break;
+                }
+                case TsPut: {
+                    zlog_debug(self->log_handle, "Dispatched TsPut.");
+                    sng_tuple_t recv = {.name = NULL, .data = NULL, .len = 0, .anon_id = 0};
+                    zlog_debug(self->log_handle, "Receiving tuple name...");
+                    p2pm_recv_str(self->local_socket, &recv.name, 0);
+                    zlog_debug(self->log_handle, "Received tupe name %s. Receiving data via shared memory...",
+                               recv.name);
+                    int r = recv_item(&this_space->ts_tsd_pipe, &recv.data, &recv.len);
+                    zlog_debug(self->log_handle, "successfully received tuple.");
+                    assert(recv.data);
+                    if (r != 0 || recv.name == NULL || recv.data == NULL) {
+                        zlog_debug(self->log_handle, "Err: shared memory wasn't received successfully. break.");
+                        break;
+                    } else {
+                        zlog_debug(self->log_handle, "Adding tuple to named_queue...");
+                        blocking_request_t match = {.name = recv.name};
+                        void *handle = NULL;
+                        _Bool need_add_queue = true;
+                        do {
+                            handle = zlistx_find(this_space->named_queue_requests, &match);
+                            if (handle == NULL) {
+
+                                zlog_debug(self->log_handle, "adding complete.");
+                                if (need_add_queue)
+                                    zlistx_add_end(this_space->named_queue,
+                                                   tplcpy(&recv)); /* shallow copy, only heap struct */
+                                break; /* break out of the look */
+                            } else {
+                                zlog_debug(self->log_handle, "Found an outstanding blocking request.");
+                                /* we have outstanding request, don't add, just return! */
+                                blocking_request_t *blck = zlistx_detach(this_space->named_queue_requests, handle);
+                                if (blck->local) {
+                                    /* likely this won't happen, please think of why? */
+                                    switch (blck->command) {
+                                        case TsPeek_Blocking:
+                                        case TsRead_Blocking:
+                                            zlistx_add_end(this_space->named_queue, tplcpy(&recv));
+                                            need_add_queue = false;
+                                        default:
+                                            zmq_send(self->local_socket, this_space_name, strlen(this_space_name),
+                                                     ZMQ_SNDMORE); /* for local, namespace name == clientid */
+                                            p2pm_send_uint32(self->local_socket, TsMore, ZMQ_SNDMORE);
+                                            p2pm_send_str(self->local_socket, recv.name, 0);
+                                            send_item(&this_space->tsd_ts_pipe, recv.data, recv.len);
+                                            zlog_debug(self->log_handle, "success");
+                                            blckfree_g(blck);
+                                            if (blck->command != TsPeek_Blocking &&
+                                                blck->command != TsRead_Blocking) {
+                                                free(recv.name);
+                                                free(recv.data);
+                                            }
+                                            need_add_queue = false;
+                                            break;
+                                    }
+                                } else {
+                                    /* isn't local */
+                                    switch (blck->command) {
+                                        case TsPeek_Blocking:
+                                        case TsRead_Blocking:   /* add to queue first */
+                                            zlistx_add_end(this_space->named_queue, tplcpy(&recv));
+                                            need_add_queue = false;
+                                        default: /* TsPop_Blocking/TsGet_Blocking */
+                                            zlog_debug(self->log_handle, "matching found (name %s, id %u, len %lu)",
+                                                       recv.name, recv.anon_id,
+                                                       recv.len);
+                                            zmq_send(self->server_socket, blck->clientid, strlen(blck->clientid),
+                                                     ZMQ_SNDMORE); /* for remote, use special client id */
+                                            p2pm_send_uint32(self->server_socket, TsMore, ZMQ_SNDMORE);
+                                            p2pm_send_str(self->server_socket, recv.name, ZMQ_SNDMORE);
+                                            p2pm_send_uint64(self->server_socket, recv.len, ZMQ_SNDMORE);
+                                            zlog_debug(self->log_handle, "zmq_send'ing tuple's data...");
+                                            zmq_send(self->server_socket, recv.data, recv.len, 0);
+                                            zlog_debug(self->log_handle, "Done.");
+                                            if (blck->command != TsPeek_Blocking &&
+                                                blck->command != TsRead_Blocking) {
+                                                free(recv.name);
+                                                free(recv.data);
+                                            }
+                                            blckfree_g(blck);
+                                            need_add_queue = false;
+                                            break;
+                                    }
+                                    isatty()
+                                }
+                            }
+                        } while (1);/*TODO problems!!! */
+                    }
+                    zlog_debug(self->log_handle, "Successfully handled TsPut.");
+                    break;
+                }
+                case TsAdd: {
+                    zlog_debug(self->log_handle, "Dispatching TsAdd...");
+                    sng_tuple_t recv = {.name = NULL, .data = NULL, .len = 0, .anon_id = 0};
+                    zlog_debug(self->log_handle, "Receiving anon_id...");
+                    p2pm_recv_uint32(self->local_socket, &recv.anon_id, 0);
+                    zlog_debug(self->log_handle, "anon_id recceived. Is %d", recv.anon_id);
+                    zlog_debug(self->log_handle, "receiving data via shared_memory...");
+                    int rt = recv_item(&this_space->ts_tsd_pipe, &recv.data, &recv.len);
+                    zlog_debug(self->log_handle, "Complete");
+                    if (rt != 0 || recv.data == NULL) {
+                        zlog_debug(self->log_handle, "An error occured during shared memory recv. break.");
+                        break;
+                    } else {
+                        zlog_debug(self->log_handle, "successfully received data. putting tuple to named_queue end.");
+                        blocking_request_t match = {.name = NULL};
+                        void *_handle = zlistx_find(this_space->named_queue_requests, &match);
+                        if (_handle == NULL) {
+
+                        } else {
+                            blocking_request_t *blck = zlistx_detach(this_space->named_queue_requests, _handle);
+                            if (blck->local) {
+                                switch (blck->command) {
+                                    case TsPeek_Blocking:
+                                        zlistx_add_end(this_space->named_queue, tplcpy(&recv));
+                                    case TsPop_Blocking: {
+                                        if (recv.name == NULL && recv.anon_id != 0) {
+                                            /* is anon */
+                                            zlog_debug(self->log_handle, "Tuple is anonymous tuple. Sending info...");
+                                            p2pm_send_uint32(self->local_socket, TsAnon, ZMQ_SNDMORE);
+                                            p2pm_send_uint32(self->local_socket, recv.anon_id, 0);
+                                            zlog_debug(self->log_handle, "Sending data via shared memory...");
+                                            send_item(&this_space->tsd_ts_pipe, recv.data, recv.len);
+                                            zlog_debug(self->log_handle, "sending complete. Success!");
+                                        } else {
+                                            zlog_debug(self->log_handle, "tuple is normal tuple. Sending TsMore...");
+                                            p2pm_send_str(self->local_socket, recv.name, ZMQ_SNDMORE);
+                                            p2pm_send_uint32(self->local_socket, TsMore, 0);
+                                            zlog_debug(self->log_handle, "sending item via share_memory...");
+                                            send_item(&this_space->tsd_ts_pipe, recv.data, recv.len);
+                                            zlog_debug(self->log_handle, "Done.");
+                                        }
+                                        zlog_debug(self->log_handle, "Successfully handled TsPop/TsPeek.");
+                                        break;
+                                    }
+                                    default: {
+                                        zlog_debug(self->log_handle, "err: this shouldn't happen (local, %d)",
+                                                   blck->command);
+                                    }
+                                }
+                            } else {
+                                /* is remote, need to use clientid in blocking request */
+                                switch (blck->command) {
+                                    case TsPeek_Blocking:
+                                        zlistx_add_end(this_space->named_queue, tplcpy(&recv));
+                                    case TsPop_Blocking: {
+                                        zmq_send(self->server_socket, blck->clientid, strlen(blck->clientid),
+                                                 ZMQ_SNDMORE);
+                                        if (recv.anon_id != 0 && recv.name == NULL) {
+                                            /* is anon! */
+                                            zlog_debug(self->log_handle, "popped an anonymous tuple...");
+                                            p2pm_send_uint32(self->server_socket, TsAnon, ZMQ_SNDMORE);
+                                            p2pm_send_uint32(self->server_socket, recv.anon_id, ZMQ_SNDMORE);
+                                        } else {
+                                            zlog_debug(self->log_handle, "popped normal tuple (name %s, len %lu",
+                                                       recv.name, recv.len);
+                                            p2pm_send_uint32(self->server_socket, TsMore, ZMQ_SNDMORE);
+                                            p2pm_send_str(self->server_socket, recv.name, ZMQ_SNDMORE);
+                                        }
+                                        p2pm_send_uint64(self->server_socket, recv.len, ZMQ_SNDMORE);
+                                        zmq_send(self->server_socket, recv.data, recv.len, 0);
+                                        free(recv.name);
+                                        free(recv.data);
+                                        blckfree_g(blck);
+                                        zlog_debug(self->log_handle, "successfully sent tuple!");
+                                        break;
+                                    }
+                                    default: {
+                                        zlog_debug(self->log_handle, "err: this shouldn't happen: %d", blck->command);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    zlog_debug(self->log_handle, "successfully handled TsAdd action. ");
+                    break;
+                }
+
+                case TsPop_Blocking:
+                case TsPeek_Blocking:
+                case TsPop:
+                case TsPeek: {
+                    zlog_debug(self->log_handle, "Dispatched TsPop/TsPeek. Sending header clientid...");
+                    if (action != TsPop_Blocking && action != TsPeek_Blocking)
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "checking size of named_queue != 0");
+                    if (zlistx_size(this_space->named_queue) == 0) {
+                        if (action == TsPop_Blocking || action == TsPeek_Blocking) {
+                            zlog_debug(self->log_handle, "queue is empty, but adding request to incoming queue...");
+                            blocking_request_t blck = {.local=1, .name=NULL, .command=action, .extra=0};
+                            zlistx_add_end(this_space->named_queue_requests, blckcpy(&blck));
+                        } else {
+                            zlog_debug(self->log_handle, "error: named_queue is empty. Sending TsEof...");
+                            p2pm_send_uint32(self->local_socket, TsEof, 0);
+                        }
+                        zlog_debug(self->log_handle, "done. break.");
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "done. popping an item...");
+                    sng_tuple_t *tpl = NULL;
+                    if (action == TsPop || action == TsPop_Blocking) {
+                        tpl = zlistx_detach(this_space->named_queue, NULL);
+                    } else
+                        tpl = zlistx_first(this_space->named_queue);
+
+                    if (tpl == NULL) {
+                        if (action == TsPop_Blocking || action == TsPeek_Blocking) {
+                            blocking_request_t blck = {.local = 1, .name = NULL, .command = action, .extra = 0};
+                            zlistx_add_end(this_space->named_queue_requests, blckcpy(&blck));
+                        } else {
+                            zlog_debug(self->log_handle, "Error: tuple is NULL. Sending TsEnf and break.");
+                            p2pm_send_uint32(self->local_socket, TsEnf, 0);
+                        }
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "detached an item. (Tuple name %s id %u len %lu)", tpl->name,
+                               tpl->anon_id, tpl->len);
+                    if (action == TsPop_Blocking || action == TsPeek_Blocking)
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                    if (tpl->name == NULL && tpl->anon_id != 0) {
+                        /* is anon */
+                        zlog_debug(self->log_handle, "Tuple is anonymous tuple. Sending info...");
+                        p2pm_send_uint32(self->local_socket, TsAnon, ZMQ_SNDMORE);
+                        p2pm_send_uint32(self->local_socket, tpl->anon_id, 0);
+                        zlog_debug(self->log_handle, "Sending data via shared memory...");
+                        send_item(&this_space->tsd_ts_pipe, tpl->data, tpl->len);
+                        zlog_debug(self->log_handle, "sending complete. Success!");
+                    } else {
+                        zlog_debug(self->log_handle, "tuple is normal tuple. Sending TsMore...");
+                        p2pm_send_str(self->local_socket, tpl->name, ZMQ_SNDMORE);
+                        p2pm_send_uint32(self->local_socket, TsMore, 0);
+                        zlog_debug(self->log_handle, "sending item via share_memory...");
+                        send_item(&this_space->tsd_ts_pipe, tpl->data, tpl->len);
+                        zlog_debug(self->log_handle, "Done.");
+                    }
+                    zlog_debug(self->log_handle, "Successfully handled TsPop/TsPeek.");
+                    if (action == TsPop) {
+                        zlog_debug(self->log_handle, " - TsPop so freeing tuple...");
+                        tplfree_g(tpl);
+                        zlog_debug(self->log_handle, " - done.");
+                    }
+                    break;
+                }
+                case TsConnect:
+                    zlog_debug(self->log_handle, "Dispatched TsConnect. Setting space to requested.");
+                    this_space->is_requested = 1;
+                    zlog_debug(self->log_handle, "Checking reply status.");
+                    if (this_space->ts_mode == TsModeMaster) {
+                        zlog_debug(self->log_handle, "A Master node connected.");
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                        p2pm_send_uint32(self->local_socket, 0, 0);
+                        this_space->is_activated = 1;
+                        /* now, construct a token */
+                        zmsg_t *msg = zmsg_new();
+                        unsigned token_id = 0;
+                        int token_ttl = -1;
+
+                        zmsg_add(msg, zframe_new(&send_token, sizeof(send_token)));
+                        zmsg_add(msg, zframe_new(&token_id, sizeof(token_id)));
+                        zmsg_add(msg, zframe_new(&token_ttl, sizeof(token_ttl)));
+                        zmsg_add(msg, zframe_new(this_space_name, PSTRLEN(this_space_name)));
+                        zmsg_add(msg, zframe_new(self->endpoint, PSTRLEN(self->endpoint)));
+                        zmsg_send(&msg, self->actor_pipe);
+                        break;
+                    } else if (!this_space->has_replied && this_space->is_activated) {
+                        zlog_debug(self->log_handle, "Preexisting master endpoint @ %s, sending...",
+                                   this_space->direct_endpoint);
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                        p2pm_send_uint32(self->local_socket, 1, ZMQ_SNDMORE);
+                        zlog_debug(self->log_handle, "sending string...");
+                        p2pm_send_str(self->local_socket, this_space->direct_endpoint, 0);
+                        zlog_debug(self->log_handle, "done. setting has_replied = 1");
+                        this_space->has_replied = 1;
+                        break;
+                    } else if (this_space->has_replied) {
+                        zlog_debug(self->log_handle, "Err: this name space is invalid (has_replied). Sending $TERM...");
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                        zlog_debug(self->log_handle, "sending string $term...");
+                        p2pm_send_str(self->local_socket, "$TERM", 0);
+                        zlog_debug(self->log_handle, "Done. Setting has_replied...");
+                        this_space->has_replied = 1;
+                        break;
+                    }/* else we just wait for enought info, and then send! (see impl below) */
+                    zlog_debug(self->log_handle,
+                               "* No endpoint is existing. Blocking client until receiving a token...");
+                    break;
+                case TsTerm: {
+                    zlog_debug(self->log_handle, "received TsTerm.");
+                    this_space->is_activated = 0;
+                    this_space->is_requested = 0;
+                    this_space->has_replied = 0;
+                    struct {    /* TODO do we actually want to do this ?? */
+                        char name[50];
+                        char rsem_name[50];
+                        char wsem_name[50];
+                    } _tsd_ts_name, _ts_tsd_name;
+                    sprintf(_tsd_ts_name.name, "%s-pull", namespace_buf);
+                    sprintf(_tsd_ts_name.rsem_name, "%s-rsem", _tsd_ts_name.name);
+                    sprintf(_tsd_ts_name.wsem_name, "%s-wsem", _tsd_ts_name.name);
+                    sprintf(_ts_tsd_name.name, "%s-push", namespace_buf);
+                    sprintf(_ts_tsd_name.rsem_name, "%s-rsem", _ts_tsd_name.name);
+                    sprintf(_ts_tsd_name.wsem_name, "%s-wsem", _ts_tsd_name.name);
+                    close_shared_memory(_tsd_ts_name.name, _tsd_ts_name.wsem_name, _tsd_ts_name.rsem_name);
+                    close_shared_memory(_ts_tsd_name.name, _ts_tsd_name.wsem_name, _ts_tsd_name.rsem_name);
+
+                    break;
+                }/* these are server-side commands, we shouldn't be using them
+                case TsEof:
+                    break;
+                case TsEnf:
+                    break;
+                case TsMore:
+                    break;
+                case TsAck:
+                    break;
+                case TsAnon:
+                    break;
+                 */
+                case TsBCast_Blocking:
+                case TsBCast: {
+                    /* we're working as a master node, which means we receive a data & move to zlistx bcast */
+                    zlog_debug(self->log_handle, "Received TsBCast.");
+                    sng_tuple_t recv = {.data = NULL, .anon_id = 0, .name = 0, .len = 0};
+                    zlog_debug(self->log_handle, "receiving string...");
+                    p2pm_recv_str(self->local_socket, &recv.name, 0);
+                    zlog_debug(self->log_handle, "string = %s", recv.name);
+                    zlog_debug(self->log_handle, "receiving data through shared memory...");
+                    int rt = recv_item(&this_space->ts_tsd_pipe, &recv.data, &recv.len);
+                    if (recv.name == NULL || recv.data == NULL) {
+                        zlog_debug(self->log_handle, "Err: rev.name == NULL || recv.data == NULL");
+                        free(recv.name);
+                        free(recv.data);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "Adding tuple %s len %lu to bcast_queue...", recv.name, recv.len);
+                    zlistx_add_end(this_space->bcast_queue, tplcpy(&recv));
+                    zlog_debug(self->log_handle, "successfully handled TsBCast command.");
+                    break;
+                }
+                case TsScatter: {
+                    zlog_debug(self->log_handle, "received TsScatter command.");
+                    zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                    size_t num_chunks = 0;
+                    zlog_debug(self->log_handle, "receiving tuple name.");
+                    int rt = p2pm_recv_uint64(self->local_socket, (uint64_t *) &num_chunks, 0);
+                    zlog_debug(self->log_handle, "received tuple num_chunks %lu", num_chunks);
+                    if (num_chunks == 0) {
+                        /* we have a problem */
+                        zlog_debug(self->log_handle, "ERR: num_chunks == 0");
+                        p2pm_send_uint32(self->local_socket, TsEnf, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "sending TsAck...");
+                    p2pm_send_uint32(self->local_socket, TsAck, 0);
+                    size_t i;
+                    for (i = 0; i < num_chunks; ++i) {
+                        sng_tuple_t tpl = {.anon_id = (unsigned int) zlistx_size(
+                                this_space->scatter_queue), .name = NULL, .data = NULL, .len = 0,};
+                        zlog_debug(self->log_handle, "Receiving chunk %lu id %u", i, tpl.anon_id);
+                        recv_item(&this_space->ts_tsd_pipe, &tpl.data, &tpl.len);
+                        zlog_debug(self->log_handle, "Received! Adding tuple of len %lu to queue...", tpl.len);
+                        zlistx_add_end(this_space->scatter_queue, tplcpy(&tpl));
+                    }
+                    zlog_debug(self->log_handle, "successfully processed tuples, detecting blocking requests...");
+                    blocking_request_t req = {.name = NULL, .extra = 0};
+                    void *_handle = NULL;
+                    do {
+                        _handle = zlistx_find(this_space->scatter_queue, &req);
+                        /* do we have capacity?? */
+                        if (zlistx_size(this_space->scatter_queue) == 0) break;
+                        /* now we have capacity */
+                        blocking_request_t *blck = zlistx_detach(this_space->scatter_queue, _handle);
+                        sng_tuple_t *tpl = zlistx_detach(this_space->scatter_queue, zlistx_last(
+                                this_space->scatter_queue
+                        ));
+                        if (blck->local) {
+
+                        } else {
+                            /* remote */
+                            zmq_send(self->server_socket, blck->clientid, strlen(blck->clientid), ZMQ_SNDMORE);
+                            p2pm_send_uint32(self->server_socket, TsAck, ZMQ_SNDMORE);
+
+                        }
+                        blckfree_g(blck);
+                    } while (_handle != NULL);
+                    zlog_debug(self->log_handle, "Successfully processed TsScatter.");
+                    break;
+                }
+                case TsGather_Blocking:
+                case TsGather: {    /* TODO: what if gather queue is longer than expected? do we drain it ? */
+                    zlog_debug(self->log_handle, "Received TsGather command.");
+                    if (action == TsGather)
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                    size_t num_chunks = zlistx_size(this_space->gather_queue);
+                    size_t num_chunks2;
+                    zlog_debug(self->log_handle, "Receiving num_chunks...");
+                    p2pm_recv_uint32(self->local_socket, (uint32_t *) &num_chunks2, 0);
+                    zlog_debug(self->log_handle, "checking if num_chunks %lu == %lu", num_chunks2, num_chunks);
+                    if (num_chunks == 0 || num_chunks != num_chunks2) {
+                        zlog_debug(self->log_handle, "OOPS...No! ");
+                        if (action == TsGather_Blocking) {
+                            blocking_request_t blck = {.local = 1, .command = TsGather_Blocking, .extra=num_chunks2};
+                            zlistx_add_end(this_space->gather_queue_requests, blckcpy(&blck));
+                        } else {
+                            p2pm_send_uint32(self->local_socket, TsEof, 0);
+                        }
+                        zlog_debug(self->log_handle, "Break");
+                        break;
+                    }
+                    if (action == TsGather_Blocking)
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "Sending TsAck...");
+                    p2pm_send_uint32(self->local_socket, TsAck, 0);
+                    zlog_debug(self->log_handle, "Sorting zlistx gather_queue for preparing to send.");
+                    zlistx_sort(this_space->gather_queue); /* sort according to anon_id's, ensure FIFO */
+                    while (zlistx_size(this_space->gather_queue) > 0) {
+                        sng_tuple_t *tpl = zlistx_detach(this_space->gather_queue, NULL);
+                        zlog_debug(self->log_handle, "Draining queue: tuple %u, len %lu", tpl->anon_id, tpl->len);
+                        send_item(&this_space->tsd_ts_pipe, tpl->data, tpl->len);
+                        zlog_debug(self->log_handle, " - successfully sent via shared memory.");
+                        tplfree_g(tpl);
+                        zlog_debug(self->log_handle, " - freed tuple.");
+                    }
+                    zlog_debug(self->log_handle, " - successfully handled gather operation.");
+                    break;
+                }
+                case TsGetWork_Blocking:
+                case TsGetWork: {
+                    zlog_debug(self->log_handle, "Received TsGetWork command.");
+                    if (action == TsGetWork)
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "checking size of list...");
+                    if (zlistx_size(this_space->scatter_queue) == 0) {
+                        zlog_debug(self->log_handle, "err: sizeof list == 0");
+                        if (action == TsGetWork_Blocking) {
+                            blocking_request_t blck = {.local=1, .command = TsGetWork_Blocking, .name = NULL, .extra = 0};
+                            zlistx_add_end(this_space->scatter_queue_requests, blckcpy(&blck));
+                        } else {
+                            p2pm_send_uint32(self->local_socket, TsEof, 0);
+                        }
+                        zlog_debug(self->log_handle, "break");
+                        break;
+                    }
+                    if (action == TsGetWork_Blocking)
+                        zmq_send(self->local_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "sending TsAck...");
+                    p2pm_send_uint32(self->local_socket, TsAck, ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "detaching tuple...");
+                    sng_tuple_t *tpl = zlistx_detach(this_space->scatter_queue, NULL);
+                    zlog_debug(self->log_handle, "tuple detached. (len %lu, id %u)", tpl->len, tpl->anon_id);
+                    p2pm_send_uint32(self->local_socket, tpl->anon_id, 0);
+                    zlog_debug(self->log_handle, "sending tuple via shared memory...");
+                    send_item(&this_space->tsd_ts_pipe, tpl->data, tpl->len);
+                    zlog_debug(self->log_handle, "Done.");
+                    tplfree_g(tpl);
+                    break;
+                }
+                case TsPutWork: {
+                    zlog_debug(self->log_handle, "Received TsPutWork");
+                    sng_tuple_t recv = {.data = NULL, .name = NULL, .anon_id = 0, .len = 0};
+                    p2pm_recv_uint32(self->local_socket, &recv.anon_id, 0);
+                    zlog_debug(self->log_handle, "Receiving tuple id %u via shared memory...", recv.anon_id);
+                    rt = recv_item(&this_space->ts_tsd_pipe, &recv.data, &recv.len);
+                    zlog_debug(self->log_handle, " - success. adding to gather_queue...");
+                    zlistx_add_end(this_space->gather_queue, tplcpy(&recv));
+                    break;
+                }
+                default:
+                    return 0;/* let's hope this never happens */
+            }
+
+        }
+        do_next_part:   /* remote service */
+        zlog_debug(self->log_handle, "do_next_part reached...");
+        memset(namespace_buf, '\0', 50);/* for safety */
+        if (items[1].revents & ZMQ_POLLIN) {
+            zlog_debug(self->log_handle, "tsd server socket activated.");
+            buf_read = zmq_recv(self->server_socket, clientid_buf, 50, 0);
+            if (buf_read < 0) {
+                zlog_debug(self->log_handle, "err: cannot read clientid_buf. skipping...");
+                goto do_last_part;
+            }
+            clientid_buf[buf_read] = '\0';
+            zlog_debug(self->log_handle, "reading namespace_buf...");
+            unsigned buf_len;
+            buf_read = p2pm_recv_uint32(self->server_socket, &buf_len, 0);
+            printf("buf_len = %u\n", buf_len);
+            if (buf_read != P2PM_OP_SUCCESS)
+                goto handle_second_error;
+            buf_read = zmq_recv(self->server_socket, namespace_buf, 50, 0);
+            namespace_buf[buf_len] = '\0';
+            if (buf_read < 0) {
+                zlog_debug(self->log_handle, "err: cannot read namespace_buf. draining socket...");
+                handle_second_error:
+                zmq_send(self->server_socket, namespace_buf, strlen(namespace_buf), ZMQ_SNDMORE);
+                p2pm_send_uint32(self->server_socket, TsEnf, 0);
+                /* drain the incoming socket */
+                zlog_debug(self->log_handle, "draining socket...");
+                int has_more = 0;
+                size_t hm_size = sizeof(has_more);
+                zmq_getsockopt(self->server_socket, ZMQ_RCVMORE, &has_more, &hm_size);  /* drain the socket */
+                while (has_more) {    /* of course, we don't really hope this to occur */
+                    zlog_debug(self->log_handle, "draining socket...");
+                    zmq_recv(self->server_socket, useless_buf, 50, 0);
+                    zmq_getsockopt(self->server_socket, ZMQ_RCVMORE, &has_more, &hm_size);
+                }
+                zlog_debug(self->log_handle, "draining done. skipping...");
+                goto do_last_part;
+            }
+            zlog_debug(self->log_handle, "querying hash table for item %s issued by client %s", namespace_buf,
+                       clientid_buf);
+            HTItem *item = HashFind(self->space_table, PTR_KEY(self->space_table, namespace_buf));
+            if (item == NULL) {
+                zlog_debug(self->log_handle, "error: no such item as %s issued by client %s", namespace_buf,
+                           clientid_buf);
+                goto handle_second_error;
+            }
+            zlog_debug(self->log_handle, "query success. receiving action...");
+            tsd_element_t *this_space = (tsd_element_t *) KEY_PTR(self->space_table, item->data);
+            const char *this_space_name = (const char *) KEY_PTR(self->space_table, item->key);
+            tuple_command_t action;
+            if (p2pm_recv_uint32(self->server_socket, (uint32_t *) &action, 0) != P2PM_OP_SUCCESS) {
+
+                zlog_debug(self->log_handle, "error recieving action.");
+                goto handle_first_error;
+            }
+            zlog_debug(self->log_handle, "switching on action (%d) ...", action);
+            /* there isn't really a TsConnect issue here, just don't handle it */
+            switch (action) {
+                case TsGet_Blocking:
+                case TsRead_Blocking:
+                case TsGet:
+                case TsRead: {
+                    zlog_debug(self->log_handle, "Received action (TsGet|TsRead).");
+                    if (action != TsGet_Blocking && action != TsRead_Blocking)
+                        zmq_send(self->server_socket, clientid_buf, strlen(clientid_buf), ZMQ_SNDMORE);
+                    sng_tuple_t match = {.name = NULL, .data = NULL, .anon_id = 0, .len = 0};
+                    zlog_debug(self->log_handle, "Receiving tuple name...");
+                    int rt = p2pm_recv_str(self->server_socket, &match.name, 0);
+                    zlog_debug(self->log_handle, "tuple name is %s", match.name);
+                    if (rt != P2PM_OP_SUCCESS || match.name == NULL) {
+                        if (action == TsGet_Blocking || action == TsRead_Blocking)
+                            zmq_send(self->server_socket, clientid_buf, strlen(clientid_buf), ZMQ_SNDMORE);
+                        p2pm_send_uint32(self->server_socket, TsEnf, 0);
+                        free(match.name);
+                        zlog_debug(self->log_handle, "error receiving tuple name.");
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "Checking if namespace is live...");
+                    if (!this_space->is_activated) {
+                        if (action == TsGet_Blocking || action == TsRead_Blocking)
+                            zmq_send(self->server_socket, clientid_buf, strlen(clientid_buf), ZMQ_SNDMORE);
+                        zlog_debug(self->log_handle, "ERR: namespace isn't activated yet!");
+                        free(match.name);
+                        p2pm_send_uint32(self->server_socket, TsTerm, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "doing tuple matching...");
+                    sng_tuple_t *m1 = NULL;
+                    void *m_handle;
+                    if (action == TsGet || action == TsGet_Blocking) {
+                        m_handle = zlistx_find(this_space->named_queue, &match);
+                        if (m_handle == NULL) goto _m_not_found;
+                        m1 = zlistx_detach(this_space->named_queue, m_handle);
+                    } else {
+                        m_handle = zlistx_find(this_space->named_queue, &match);
+                        if (m_handle == NULL) goto _m_not_found;
+                        m1 = zlistx_item(m_handle);
+                    }
+                    zlog_debug(self->log_handle, "matching done.");
+                    if (m1 == NULL) {
+                        _m_not_found:
+                        if (action == TsGet_Blocking || action == TsRead_Blocking) {
+                            zlog_debug(self->log_handle, "can't find matching, but adding it to queue");
+                            blocking_request_t blck = {.local = 1, .clientid = strdup(
+                                    clientid_buf), .name = match.name, .extra=0, .command=action};
+                            zlistx_add_end(this_space->named_queue_requests, blckcpy(&blck));
+                        } else {
+                            zlog_debug(self->log_handle, "err: matching is NULL.");
+                            p2pm_send_uint32(self->server_socket, TsEnf, 0);
+                            free(match.name);
+                        }
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "matching found (name %s, id %u, len %lu)", m1->name, m1->anon_id,
+                               m1->len);
+                    if (action == TsGet_Blocking || action == TsRead_Blocking)
+                        zmq_send(self->server_socket, clientid_buf, strlen(clientid_buf), ZMQ_SNDMORE);
+                    p2pm_send_uint32(self->server_socket, TsMore, ZMQ_SNDMORE);
+                    p2pm_send_str(self->server_socket, m1->name, ZMQ_SNDMORE);
+                    p2pm_send_uint64(self->server_socket, m1->len, ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "zmq_send'ing tuple's data...");
+                    zmq_send(self->server_socket, m1->data, m1->len, 0);
+                    zlog_debug(self->log_handle, "Done.");
+                    if (action == TsGet)
+                        tplfree_g(m1);
+                    free(match.name);
+                    break;
+                }
+                case TsPut: {   /* does not involve state-queries */
+                    zlog_debug(self->log_handle, "Received TsPut command from remote socket.");
+                    sng_tuple_t recv = {.anon_id = 0, .len = 0, .data = NULL, .name = NULL};
+                    zlog_debug(self->log_handle, "receiving tuple name...");
+                    p2pm_recv_str(self->server_socket, &recv.name, 0);
+                    zlog_debug(self->log_handle, "receiving tuple len... (name = %s)", recv.name);
+                    p2pm_recv_uint64(self->server_socket, (uint64_t *) &recv.len, 0);
+                    if (recv.len == 0 || recv.name == NULL) {
+                        free(recv.name);
+                        zlog_debug(self->log_handle, "err: len == 0");
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "receiving data... (len = %lu)", recv.len);
+                    recv.data = malloc(recv.len);
+                    zmq_recv(self->server_socket, recv.data, recv.len, 0);
+                    zlog_debug(self->log_handle, "data received! adding to named_queue");
+                    zlistx_add_end(this_space->named_queue, tplcpy(&recv));
+                    break;
+                }
+                case TsAdd: {   /* does not involve state-queries */
+                    zlog_debug(self->log_handle, "Received TsAdd command.");
+                    sng_tuple_t recv = {.anon_id = 0, .len = 0, .data = NULL, .name = NULL};
+                    zlog_debug(self->log_handle, "Receiving ID...");
+                    p2pm_recv_uint32(self->server_socket, &recv.anon_id, 0);
+                    zlog_debug(self->log_handle, "Receiving len (id=%u)", recv.anon_id);
+                    p2pm_recv_uint64(self->server_socket, (uint64_t *) &recv.len, 0);
+                    if (recv.len == 0) {
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "received len = %lu. receiving data...", recv.len);
+                    recv.data = malloc(recv.len);
+                    zmq_recv(self->server_socket, recv.data, recv.len, 0);
+                    zlog_debug(self->log_handle, "received data.");
+                    zlistx_add_end(this_space->named_queue, tplcpy(&recv));
+                    zlog_debug(self->log_handle, "successfully handled TsPut.");
+                    break;
+                }
+                case TsPop_Blocking:
+                case TsPeek_Blocking:
+                case TsPop:
+                case TsPeek: {
+                    zlog_debug(self->log_handle, "query command is TsPop/TsPeek.clientid:%s", clientid_buf);
+                    zmq_send(self->server_socket, clientid_buf, strlen(clientid_buf), ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "checking if space is enabled...");
+                    sng_tuple_t *tpl = NULL;
+                    if (!this_space->is_activated) {
+                        zlog_debug(self->log_handle, "ERR: space not enabled");
+                        p2pm_send_uint32(self->server_socket, TsTerm, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "checking if named_queue is 0");
+                    if (zlistx_size(this_space->named_queue) == 0) {
+                        zlog_debug(self->log_handle, "err: queue len == 0");
+                        p2pm_send_uint32(self->server_socket, TsEof, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "popping an element from the queue...");
+                    if (action == TsPop)
+                        tpl = zlistx_detach(this_space->named_queue, NULL);
+                    else
+                        tpl = zlistx_first(this_space->named_queue);
+                    if (tpl == NULL) {
+                        zlog_debug(self->log_handle, "err: popped tuple is null");
+                        p2pm_send_uint32(self->server_socket, TsEof, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "**Finally: sending the tuple back...");
+                    if (tpl->anon_id != 0 && tpl->name == NULL) {
+                        /* is anon! */
+                        zlog_debug(self->log_handle, "popped an anonymous tuple...");
+                        p2pm_send_uint32(self->server_socket, TsAnon, ZMQ_SNDMORE);
+                        p2pm_send_uint32(self->server_socket, tpl->anon_id, ZMQ_SNDMORE);
+                    } else {
+                        zlog_debug(self->log_handle, "popped normal tuple (name %s, len %lu", tpl->name, tpl->len);
+                        p2pm_send_uint32(self->server_socket, TsMore, ZMQ_SNDMORE);
+                        p2pm_send_str(self->server_socket, tpl->name, ZMQ_SNDMORE);
+                    }
+                    p2pm_send_uint64(self->server_socket, tpl->len, ZMQ_SNDMORE);
+                    zmq_send(self->server_socket, tpl->data, tpl->len, 0);
+                    if (action == TsPop)
+                        tplfree_g(tpl);
+                    zlog_debug(self->log_handle, "successfully sent tuple!");
+                    break;
+                }
+                    /* we don't need the folling (hopefully):
+                        case TsConnect:break;
+                        case TsEof:break;
+                        case TsEnf:break;
+                        case TsMore:break;
+                        case TsAck:break;
+                        case TsAnon:break;
+                        case TsScatter:break;
+                        case TsGather:break;
+                     */
+                case TsBCast: {
+                    zlog_debug(self->log_handle, "Received TsBCast command.");
+                    zmq_send(self->server_socket, clientid_buf, strlen(clientid_buf), ZMQ_SNDMORE);
+                    sng_tuple_t match = {.data = NULL, .anon_id = 0, .len = 0, .name = NULL};
+                    zlog_debug(self->log_handle, "Receiving tuple name");
+                    int rt = p2pm_recv_str(self->server_socket, &match.name, 0);
+                    if (rt != P2PM_OP_SUCCESS || match.name == NULL) {
+                        zlog_debug(self->log_handle, "err receiving tuple name");
+                        free(match.name);
+                        p2pm_send_uint32(self->server_socket, TsEof, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "checking space status (name=%s)", match.name);
+                    if (!this_space->is_activated) {
+                        free(match.name);
+                        zlog_debug(self->log_handle, "err: space %s requested by client %s is already down.",
+                                   namespace_buf, clientid_buf);
+                        p2pm_send_uint32(self->server_socket, TsTerm, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "doing tuple match...");
+                    sng_tuple_t *tpl = zlistx_item(zlistx_find(this_space->bcast_queue, &match));
+                    if (tpl == NULL) {
+                        zlog_debug(self->log_handle, "err: no matching tuples.");
+                        free(match.name);
+                        p2pm_send_uint32(self->server_socket, TsEnf, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "found matching tuple (id=%u,len=%lu,name=%s)", tpl->anon_id, tpl->len,
+                               tpl->name);
+                    p2pm_send_uint32(self->server_socket, TsAck, ZMQ_SNDMORE);
+                    p2pm_send_uint64(self->server_socket, tpl->len, ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "sent Ack and Len. Sending tuple data...");
+                    zmq_send(self->server_socket, tpl->data, tpl->len, 0);
+                    zlog_debug(self->log_handle, "sent.");
+                    free(match.name);
+                    break;
+                }
+                case TsGetWork: {
+                    zlog_debug(self->log_handle, "received TsGetWork command.");
+                    zmq_send(self->server_socket, clientid_buf, strlen(clientid_buf), ZMQ_SNDMORE);
+                    if (!this_space->is_activated) {
+                        zlog_debug(self->log_handle, "err: %s requested by %s is deactivated.", namespace_buf,
+                                   clientid_buf);
+                        p2pm_send_uint32(self->server_socket, TsTerm, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "checking scatter_queue size...");
+                    if (zlistx_size(this_space->scatter_queue) == 0) {
+                        zlog_debug(self->log_handle, "err: queue size == 0");
+                        p2pm_send_uint32(self->server_socket, TsEof, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "detaching an element from queue");
+                    sng_tuple_t *tpl = zlistx_detach(this_space->scatter_queue, NULL);
+                    if (tpl == NULL) {
+                        zlog_debug(self->log_handle, "err: tuple == NULL");
+                        p2pm_send_uint32(self->server_socket, TsEof, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "detached item id %u len %lu from queue", tpl->anon_id, tpl->len);
+                    p2pm_send_uint32(self->server_socket, TsAck, ZMQ_SNDMORE);
+                    p2pm_send_uint32(self->server_socket, tpl->anon_id, ZMQ_SNDMORE);
+                    p2pm_send_uint64(self->server_socket, tpl->len, ZMQ_SNDMORE);
+                    zlog_debug(self->log_handle, "zmq_send'ing data...");
+                    zmq_send(self->server_socket, tpl->data, tpl->len, 0);
+                    zlog_debug(self->log_handle, "done.");
+                    tplfree_g(tpl);
+                    zlog_debug(self->log_handle, "successfully handled TsGetWork.");
+                    break;
+                }
+                case TsPutWork: {
+                    zlog_debug(self->log_handle, "Received TsPutWork command.");
+                    sng_tuple_t recv = {.anon_id = 0, .len = 0, .data = NULL, .name = NULL};
+                    zlog_debug(self->log_handle, "Receiving anon_id...");
+                    p2pm_recv_uint32(self->server_socket, &recv.anon_id, 0);
+                    zlog_debug(self->log_handle, "Receiving recv_len...");
+                    p2pm_recv_uint64(self->server_socket, (uint64_t *) &recv.len, 0);
+                    if (recv.len == 0 || recv.anon_id == 0) {
+                        zlog_debug(self->log_handle, "len == 0 ERROR");
+                        zmq_recv(self->server_socket, useless_buf, 50, 0);
+                        break;
+                    }
+                    zlog_debug(self->log_handle, "id = %u, len = %lu, receiving data...", recv.anon_id, recv.len);
+                    recv.data = malloc(recv.len);
+                    zlog_debug(self->log_handle, "receiving data via zmq_recv()...");
+                    zmq_recv(self->server_socket, recv.data, recv.len, 0);
+                    zlog_debug(self->log_handle, "receive success. adding to gather_queue...");
+                    zlistx_add_end(this_space->gather_queue, tplcpy(&recv));
+                    break;
+                }
+                default:
+                    return 1; /* hoping this doesn't happen! */
+            }
+
+        }
+        do_last_part:
+        zlog_debug(self->log_handle, "processing the last part...");
+        if (items[2].revents & ZMQ_POLLIN) {    /* received a token in p2pmd */
+            zlog_debug(self->log_handle, "A token has been received by tsd!");
+            zmsg_t *msg = zmsg_recv(self->actor_pipe);
+            zlog_debug(self->log_handle, " - pop id_frame");
+            zframe_t *token_id_frame = zmsg_first(msg);  /* 1 */
+            zlog_debug(self->log_handle, " - pop name_frame");
+            zframe_t *token_ttl_frame = zmsg_next(msg); /* 2 */
+            zlog_debug(self->log_handle, " - pop addr_frame");
+            zframe_t *token_name_frame = zmsg_next(msg); /* 3 */
+            zlog_debug(self->log_handle, " - pop token_frame");
+            zframe_t *token_addr_frame = zmsg_next(msg); /* 4 */
+            zlog_debug(self->log_handle, "querying hash table for item %s", (char *) zframe_data(token_name_frame));
+            HTItem *item = HashFind(self->space_table,
+                                    PTR_KEY(self->space_table, (char *) zframe_data(token_name_frame)));
+            if (item == NULL) {
+                zlog_debug(self->log_handle, "err: frame not found!");
+                /* no such token, skip */
+                int ttl = (*((int *) zframe_data(token_ttl_frame)));
+                if (ttl != 0) {
+                    zlog_debug(self->log_handle, "relaying frame off (ttl = %u)",
+                               (*(int *) zframe_data(token_ttl_frame)));
+                    zmsg_push(msg, zframe_new(&send_token, sizeof(send_token)));
+                    zmsg_send(&msg, self->actor_pipe);
+                } else
+                    zmsg_destroy(&msg);
+            } else {
+                zlog_debug(self->log_handle, "resolving element from frame...");
+
+                tsd_element_t *element = (tsd_element_t *) KEY_PTR(self->space_table, item->data);
+                if (element->is_activated)
+                    goto do_next_loop;
+                element->is_activated = 1;
+
+                memcpy(element->direct_endpoint, (char *) zframe_data(token_addr_frame),
+                       PSTRLEN((char *) zframe_data(token_addr_frame)));
+                zlog_debug(self->log_handle, "cpy'ing memory... frame is %s by %s",
+                           (char *) zframe_data(token_name_frame), element->direct_endpoint);
+                if (element->is_requested) {
+                    zlog_debug(self->log_handle, "is requested by element. so sending it to namespace %s",
+                               KEY_PTR(self->space_table, item->key));
+                    zmq_send(self->local_socket, KEY_PTR(self->space_table, item->key),
+                             strlen(KEY_PTR(self->space_table, item->key)),
+                             ZMQ_SNDMORE);
+                    p2pm_send_str(self->local_socket, element->direct_endpoint, 0);
+                    zlog_debug(self->log_handle, "setting has_replied to 1");
+                    element->has_replied = 1;
+                }
+                if (*((int *) zframe_data(token_ttl_frame)) != 0) {
+                    zlog_debug(self->log_handle, "ttl == %d > 0, relaying token off...",
+                               *((int *) zframe_data(token_ttl_frame)));
+                    zmsg_push(msg, zframe_new(&send_token, sizeof(send_token)));
+                    zmsg_send(&msg, self->actor_pipe);
+                } else
+                    zmsg_destroy(&msg);
+            }
+        }
+        do_next_loop:
+        zlog_debug(self->log_handle, " *** arrived at do_next_loop *** ");
+        /* next loop */
+        memset(namespace_buf, '\0', 50);
+        memset(useless_buf, '\0', 50);
+        memset(clientid_buf, '\0', 50);
+    } while (1); /* TODO here */
+    return 0;
+}
+

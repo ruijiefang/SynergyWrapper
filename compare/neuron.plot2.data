@@ -1,0 +1,21 @@
+# Note: @ SynergyC, 8x4 arrangement the kernel scheduler starts to kick in and
+# consequently we are unable to get stable task assignments. The scheduler
+# simply blocks some jobs completely and hence the varying numbers every since.
+# However, the numbers are stable even facing the "work-stealing" condition.
+# X    MPI       SynergyA 			SynergyB	SynergyC
+4      8.192     18.231             			
+6      9.209     11.391             
+8      8.233     10.221	            18.803
+10     9.527     10.401    
+12     8.581     9.942    
+14     9.234     10.956    
+16     8.544     9.612              16.354      20.080
+24     # # 10.8  13.976
+32     # # 10.9  31.139
+40     # # #     10.082
+48     # # 11.8  10.802
+56     # # #     11.854
+64     # # 12.044  11.320
+
+
+

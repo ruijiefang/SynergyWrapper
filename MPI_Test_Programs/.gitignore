@@ -1,0 +1,6 @@
+cmake-build-debug/
+build/
+cmake/
+cmdmake/
+custommake/
+.idea/

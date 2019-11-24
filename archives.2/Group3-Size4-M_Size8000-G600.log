@@ -1,0 +1,94 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:4
+ # SIZE:8000
+ # G:   600
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 600[0]
+Sending part 1200[1]
+Sending part 1800[2]
+Sending part 2400[3]
+Sending part 3000[4]
+Sending part 3600[5]
+Sending part 4200[6]
+Sending part 4800[7]
+Sending part 5400[8]
+Sending part 6000[9]
+Sending part 6600[10]
+Sending part 7200[11]
+Sending part 7800[12]
+master: synchronizing
+Client[1]: sending back to master
+Client[2]: sending back to master
+Client[3]: sending back to master
+master: collecting remote 600[0]
+master: collecting remote 1200[1]
+master: collecting remote 1800[2]
+master: collecting remote 2400[3]
+master: collecting remote 3000[4]
+master: collecting remote 3600[5]
+master: collecting remote 4200[6]
+master: collecting remote 4800[7]
+master: collecting remote 5400[8]
+master: collecting remote 6000[9]
+master: collecting remote 6600[10]
+master: collecting remote 7200[11]
+master: collecting remote 7800[12]
+ === Time spent: 73.510640 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:4
+ # SIZE:8000
+ # G:   600
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 600[0]
+Sending part 1200[1]
+Sending part 1800[2]
+Sending part 2400[3]
+Sending part 3000[4]
+Sending part 3600[5]
+Sending part 4200[6]
+Sending part 4800[7]
+Sending part 5400[8]
+Sending part 6000[9]
+Sending part 6600[10]
+Sending part 7200[11]
+Sending part 7800[12]
+master: synchronizing
+Client[1]: sending back to master
+Client[2]: sending back to master
+Client[3]: sending back to master
+master: collecting remote 600[0]
+master: collecting remote 1200[1]
+master: collecting remote 1800[2]
+master: collecting remote 2400[3]
+master: collecting remote 3000[4]
+master: collecting remote 3600[5]
+master: collecting remote 4200[6]
+master: collecting remote 4800[7]
+master: collecting remote 5400[8]
+master: collecting remote 6000[9]
+master: collecting remote 6600[10]
+master: collecting remote 7200[11]
+master: collecting remote 7800[12]
+ === Time spent: 74.474204 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============

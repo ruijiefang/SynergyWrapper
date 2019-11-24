@@ -1,0 +1,7 @@
+#!/bin/bash
+echo " *** /tmp status ***"
+ls -l /tmp
+echo " *** /dev/shm status ***"
+ls -l /dev/shm/
+echo " === launching tsd @ pipe /tmp/tsd"$1 "#../etc/synergy-config-"$1".json ==="
+../cmake-build-debug/sng_tsd ../etc/synergy-config-$1.json ../etc/synergy-log.conf

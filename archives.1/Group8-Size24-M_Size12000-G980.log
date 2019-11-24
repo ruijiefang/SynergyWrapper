@@ -1,0 +1,7 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:8
+ # Threads per group:24
+ # SIZE:12000
+ # G:   980
+ ###########################
+ ** Launching SynergyWrapper process@2...

@@ -1,0 +1,118 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:6
+ # SIZE:8000
+ # G:   450
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 450[0]
+Sending part 900[1]
+Sending part 1350[2]
+Sending part 1800[3]
+Sending part 2250[4]
+Sending part 2700[5]
+Sending part 3150[6]
+Sending part 3600[7]
+Sending part 4050[8]
+Sending part 4500[9]
+Sending part 4950[10]
+Sending part 5400[11]
+Sending part 5850[12]
+Sending part 6300[13]
+Sending part 6750[14]
+Sending part 7200[15]
+Sending part 7650[16]
+master: synchronizing
+Client[1]: sending back to master
+Client[3]: sending back to master
+Client[5]: sending back to master
+Client[2]: sending back to master
+Client[4]: sending back to master
+master: collecting remote 450[0]
+master: collecting remote 900[1]
+master: collecting remote 1350[2]
+master: collecting remote 1800[3]
+master: collecting remote 2250[4]
+master: collecting remote 2700[5]
+master: collecting remote 3150[6]
+master: collecting remote 3600[7]
+master: collecting remote 4050[8]
+master: collecting remote 4500[9]
+master: collecting remote 4950[10]
+master: collecting remote 5400[11]
+master: collecting remote 5850[12]
+master: collecting remote 6300[13]
+master: collecting remote 6750[14]
+master: collecting remote 7200[15]
+master: collecting remote 7650[16]
+ === Time spent: 50.846107 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:6
+ # SIZE:8000
+ # G:   450
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 450[0]
+Sending part 900[1]
+Sending part 1350[2]
+Sending part 1800[3]
+Sending part 2250[4]
+Sending part 2700[5]
+Sending part 3150[6]
+Sending part 3600[7]
+Sending part 4050[8]
+Sending part 4500[9]
+Sending part 4950[10]
+Sending part 5400[11]
+Sending part 5850[12]
+Sending part 6300[13]
+Sending part 6750[14]
+Sending part 7200[15]
+Sending part 7650[16]
+master: synchronizing
+Client[1]: sending back to master
+Client[2]: sending back to master
+Client[3]: sending back to master
+Client[4]: sending back to master
+Client[5]: sending back to master
+master: collecting remote 450[0]
+master: collecting remote 900[1]
+master: collecting remote 1350[2]
+master: collecting remote 1800[3]
+master: collecting remote 2250[4]
+master: collecting remote 2700[5]
+master: collecting remote 3150[6]
+master: collecting remote 3600[7]
+master: collecting remote 4050[8]
+master: collecting remote 4500[9]
+master: collecting remote 4950[10]
+master: collecting remote 5400[11]
+master: collecting remote 5850[12]
+master: collecting remote 6300[13]
+master: collecting remote 6750[14]
+master: collecting remote 7200[15]
+master: collecting remote 7650[16]
+ === Time spent: 52.926390 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============

@@ -1,0 +1,13 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:10
+ # SIZE:8000
+ # G:   300
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+-------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+-------------------------------------------------------

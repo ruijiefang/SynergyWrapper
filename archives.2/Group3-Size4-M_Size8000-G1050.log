@@ -1,0 +1,70 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:4
+ # SIZE:8000
+ # G:   1050
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 1050[0]
+Sending part 2100[1]
+Sending part 3150[2]
+Sending part 4200[3]
+Sending part 5250[4]
+Sending part 6300[5]
+Sending part 7350[6]
+master: synchronizing
+Client[1]: sending back to master
+Client[2]: sending back to master
+Client[3]: sending back to master
+master: collecting remote 1050[0]
+master: collecting remote 2100[1]
+master: collecting remote 3150[2]
+master: collecting remote 4200[3]
+master: collecting remote 5250[4]
+master: collecting remote 6300[5]
+master: collecting remote 7350[6]
+ === Time spent: 72.297978 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:4
+ # SIZE:8000
+ # G:   1050
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 1050[0]
+Sending part 2100[1]
+Sending part 3150[2]
+Sending part 4200[3]
+Sending part 5250[4]
+Sending part 6300[5]
+Sending part 7350[6]
+master: synchronizing
+Client[1]: sending back to master
+Client[2]: sending back to master
+Client[3]: sending back to master
+master: collecting remote 1050[0]
+master: collecting remote 2100[1]
+master: collecting remote 3150[2]
+master: collecting remote 4200[3]
+master: collecting remote 5250[4]
+master: collecting remote 6300[5]
+master: collecting remote 7350[6]
+ === Time spent: 74.054252 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============

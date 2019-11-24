@@ -1,0 +1,28 @@
+{
+  "p2pmd": {
+    "mode": "member",
+    "endpoint": "tcp://127.0.0.1:8888",
+    "successor_list": ["tcp://FirstSuccessor:9999", "tcp://SecondSuccesssor:8888", "tcp://ThirdSuccessor:7777"],
+    "predecessor": "tcp://PredecessorPointer:2222",
+    "r": 3,
+    "r_max": 5
+  },
+  "tsd": {
+    "endpoint": "tcp://127.0.0.1:8889"
+  },
+  "spaces": [
+    {
+      "name": "space2$2",
+      "mode": "worker",
+      "id": 3,
+      "tsd_mode": ["direct", "tcp://MasterAddress:1234"]
+    },
+    {
+      "id": 3,
+
+      "name": "space4$3",
+      "mode": "worker",
+      "tsd_mode": ["token"]
+    }
+  ]
+}

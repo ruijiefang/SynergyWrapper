@@ -1,0 +1,180 @@
+./matrix_master_scale.sh: line 13: [: ==: unary operator expected
+ *** Testing Matrix @8000 Group=2 4000 ***
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+   * -----> Success starting tsd <------- *
+rm: cannot remove './matrix_worker_*.log': No such file or directory
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 0.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+matrix_worker: no process found
+mpirun: no process found
+   * -----> Successful first run <-------- *
+rm: cannot remove './matrix_worker_*.log': No such file or directory
+--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 0.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------
+matrix_worker: no process found
+mpirun: no process found
+ *** Finishing Calculations *** 
+
+killing tsd @ 1...
+matrix_worker: no process found
+killing tsd @ 2...
+matrix_worker: no process found
+matrix_master: no process found
+mpirun: no process found
+ *** Testing Matrix @8000 Group=3 2666 ***
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+sng_tsd: no process found
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+sng_tsd: no process found
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+   * -----> Success starting tsd <------- *
+rm: cannot remove './matrix_worker_*.log': No such file or directory
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node sng-2 exited on signal 9 (Killed).
+--------------------------------------------------------------------------
+/home/cc/Synergy4/s4c00/scripts/matrix.sh: line 35: 31521 Killed                  mpirun -np $2 ../cmake-build-debug/matrix_master "ipc:///tmp/tsd1" $3 $4
+matrix_worker: no process found
+mpirun: no process found
+matrix_worker: no process found
+mpirun: no process found
+   * -----> Successful first run <-------- *
+rm: cannot remove './matrix_worker_*.log': No such file or directory
+[sng-2:30960] Read 6660080, expected 9472000, errno = 2
+[sng-2:30958] *** Process received signal ***
+[sng-2:30958] Signal: Segmentation fault (11)
+[sng-2:30958] Signal code: Address not mapped (1)
+[sng-2:30958] Failing at address: 0x7f1321d73000
+[sng-2:30958] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x11390)[0x7f1339e48390]
+[sng-2:30958] [ 1] /lib/x86_64-linux-gnu/libc.so.6(+0x14e156)[0x7f13398ba156]
+[sng-2:30958] [ 2] /usr/local/lib/openmpi/mca_btl_vader.so(+0x2f29)[0x7f132ebabf29]
+[sng-2:30958] [ 3] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_schedule_once+0x1e7)[0x7f132e18c2a7]
+[sng-2:30958] [ 4] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_process_pending+0x1c5)[0x7f132e18c915]
+[sng-2:30958] [ 5] /usr/local/lib/openmpi/mca_pml_ob1.so(+0x1e738)[0x7f132e18f738]
+[sng-2:30958] [ 6] /usr/local/lib/openmpi/mca_btl_vader.so(mca_btl_vader_poll_handle_frag+0x2a6)[0x7f132ebadaa6]
+[sng-2:30958] [ 7] /usr/local/lib/openmpi/mca_btl_vader.so(+0x4b5e)[0x7f132ebadb5e]
+[sng-2:30958] [ 8] /usr/local/lib/libopen-pal.so.40(opal_progress+0x3c)[0x7f13389445fc]
+[sng-2:30958] [ 9] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send+0x7cd)[0x7f132e17de9d]
+[sng-2:30958] [10] /usr/local/lib/libmpi.so.40(PMPI_Send+0x14b)[0x7f1339bb4d2b]
+[sng-2:30958] [11] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x4028a6]
+[sng-2:30958] [12] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0)[0x7f133978c830]
+[sng-2:30958] [13] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x402dd9]
+[sng-2:30958] *** End of error message ***
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node sng-2 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+ *** Finishing Calculations *** 
+
+killing tsd @ 1...
+matrix_worker: no process found
+matrix_master: no process found
+mpirun: no process found
+killing tsd @ 2...
+matrix_worker: no process found
+matrix_master: no process found
+killing tsd @ 3...
+matrix_master: no process found
+ *** Testing Matrix @8000 Group=4 2000 ***
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+sng_tsd: no process found
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+sng_tsd: no process found
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+sng_tsd: no process found
+rm: cannot remove './tsd1.log': No such file or directory
+rm: cannot remove './tsd2.log': No such file or directory
+sng_tsd: no process found
+   * -----> Success starting tsd <------- *
+rm: cannot remove './matrix_worker_*.log': No such file or directory
+[sng-2:31595] Read 4292080, expected 7104000, errno = 2
+[sng-2:31592] *** Process received signal ***
+[sng-2:31592] Signal: Segmentation fault (11)
+[sng-2:31592] Signal code: Address not mapped (1)
+[sng-2:31592] Failing at address: 0x7f487e795000
+[sng-2:31592] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x11390)[0x7f489b90d390]
+[sng-2:31592] [ 1] /lib/x86_64-linux-gnu/libc.so.6(+0x14e156)[0x7f489b37f156]
+[sng-2:31592] [ 2] /usr/local/lib/openmpi/mca_btl_vader.so(+0x2f29)[0x7f4890782f29]
+[sng-2:31592] [ 3] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_schedule_once+0x1e7)[0x7f488bbe92a7]
+[sng-2:31592] [ 4] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_process_pending+0x1c5)[0x7f488bbe9915]
+[sng-2:31592] [ 5] /usr/local/lib/openmpi/mca_pml_ob1.so(+0x1e738)[0x7f488bbec738]
+[sng-2:31592] [ 6] /usr/local/lib/openmpi/mca_btl_vader.so(mca_btl_vader_poll_handle_frag+0x2a6)[0x7f4890784aa6]
+[sng-2:31592] [ 7] /usr/local/lib/openmpi/mca_btl_vader.so(+0x4b5e)[0x7f4890784b5e]
+[sng-2:31592] [ 8] /usr/local/lib/libopen-pal.so.40(opal_progress+0x3c)[0x7f489a4095fc]
+[sng-2:31592] [ 9] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send+0x7cd)[0x7f488bbdae9d]
+[sng-2:31592] [10] /usr/local/lib/libmpi.so.40(PMPI_Send+0x14b)[0x7f489b679d2b]
+[sng-2:31592] [11] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x4028a6]
+[sng-2:31592] [12] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0)[0x7f489b251830]
+[sng-2:31592] [13] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x402dd9]
+[sng-2:31592] *** End of error message ***
+[sng-3:23480] Read 4427248, expected 7104000, errno = 2
+[sng-3:23477] *** Process received signal ***
+[sng-3:23477] Signal: Segmentation fault (11)
+[sng-3:23477] Signal code: Invalid permissions (2)
+[sng-3:23477] Failing at address: 0x7fcb84021000
+[sng-3:23477] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x11390)[0x7fcba0325390]
+[sng-3:23477] [ 1] /lib/x86_64-linux-gnu/libc.so.6(+0x14e156)[0x7fcb9fd97156]
+[sng-3:23477] [ 2] /usr/local/lib/openmpi/mca_btl_vader.so(+0x2f29)[0x7fcb95185f29]
+[sng-3:23477] [ 3] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_schedule_once+0x1e7)[0x7fcb947662a7]
+[sng-3:23477] [ 4] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_process_pending+0x1c5)[0x7fcb94766915]
+[sng-3:23477] [ 5] /usr/local/lib/openmpi/mca_pml_ob1.so(+0x1e738)[0x7fcb94769738]
+[sng-3:23477] [ 6] /usr/local/lib/openmpi/mca_btl_vader.so(mca_btl_vader_poll_handle_frag+0x2a6)[0x7fcb95187aa6]
+[sng-3:23477] [ 7] /usr/local/lib/openmpi/mca_btl_vader.so(+0x4b5e)[0x7fcb95187b5e]
+[sng-3:23477] [ 8] /usr/local/lib/libopen-pal.so.40(opal_progress+0x3c)[0x7fcb9ee215fc]
+[sng-3:23477] [ 9] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send+0x7cd)[0x7fcb94757e9d]
+[sng-3:23477] [10] /usr/local/lib/libmpi.so.40(PMPI_Send+0x14b)[0x7fcba0091d2b]
+[sng-3:23477] [11] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x4028a6]
+[sng-3:23477] [12] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0)[0x7fcb9fc69830]
+[sng-3:23477] [13] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x402dd9]
+[sng-3:23477] *** End of error message ***
+[sng-4:13798] Read 4292080, expected 7104000, errno = 2
+[sng-4:13795] *** Process received signal ***
+[sng-4:13795] Signal: Segmentation fault (11)
+[sng-4:13795] Signal code: Address not mapped (1)
+[sng-4:13795] Failing at address: 0x7f6ac6575000
+[sng-4:13795] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x11390)[0x7f6ade61e390]
+[sng-4:13795] [ 1] /lib/x86_64-linux-gnu/libc.so.6(+0x14e156)[0x7f6ade090156]
+[sng-4:13795] [ 2] /usr/local/lib/openmpi/mca_btl_vader.so(+0x2f29)[0x7f6ad33d3f29]
+[sng-4:13795] [ 3] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_schedule_once+0x1e7)[0x7f6ad29b42a7]
+[sng-4:13795] [ 4] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send_request_process_pending+0x1c5)[0x7f6ad29b4915]
+[sng-4:13795] [ 5] /usr/local/lib/openmpi/mca_pml_ob1.so(+0x1e738)[0x7f6ad29b7738]
+[sng-4:13795] [ 6] /usr/local/lib/openmpi/mca_btl_vader.so(mca_btl_vader_poll_handle_frag+0x2a6)[0x7f6ad33d5aa6]
+[sng-4:13795] [ 7] /usr/local/lib/openmpi/mca_btl_vader.so(+0x4b5e)[0x7f6ad33d5b5e]
+[sng-4:13795] [ 8] /usr/local/lib/libopen-pal.so.40(opal_progress+0x3c)[0x7f6add11a5fc]
+[sng-4:13795] [ 9] /usr/local/lib/openmpi/mca_pml_ob1.so(mca_pml_ob1_send+0x7cd)[0x7f6ad29a5e9d]
+[sng-4:13795] [10] /usr/local/lib/libmpi.so.40(PMPI_Send+0x14b)[0x7f6ade38ad2b]
+[sng-4:13795] [11] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x4028a6]
+[sng-4:13795] [12] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf0)[0x7f6addf62830]
+[sng-4:13795] [13] /home/cc/Synergy4/s4c00/cmake-build-debug/matrix_worker[0x402dd9]
+[sng-4:13795] *** End of error message ***
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node sng-2 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node sng-3 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node sng-4 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 11 with PID 0 on node sng-1 exited on signal 9 (Killed).
+--------------------------------------------------------------------------

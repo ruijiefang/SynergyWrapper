@@ -1,0 +1,42 @@
+{
+  "p2pmd": {
+    "mode": "member",
+    "endpoint": "tcp://127.0.0.1:9011",
+    "successor_list": ["tcp://127.0.0.1:9010"],
+    "predecessor": "tcp://127.0.0.1:9010",
+    "r": 1,
+    "r_max": 5
+  },
+  "tsd": {
+    "endpoint": "tcp://127.0.0.1:8011",
+    "ipc": "ipc:///tmp/tsd2",
+    "replication_factor": 1
+  },
+  "spaces": [
+    {
+      "id" : 1,
+      "name": "/tspace3",
+      "mode":"worker",
+      "tsd_mode": ["token"]
+    },
+    {
+      "id": 2,
+      "name": "/tspace4",
+      "mode": "master",
+      "tsd_mode": ["token"]
+    },
+    {
+      "id": 3,
+      "name": "/p2ptspace",
+      "mode": "p2p",
+      "tsd_mode": ["token"]
+    },
+
+    {
+      "id" : 4,
+      "name": "/matrix",
+      "mode": "worker",
+      "tsd_mode": ["token"]
+    }
+  ]
+}

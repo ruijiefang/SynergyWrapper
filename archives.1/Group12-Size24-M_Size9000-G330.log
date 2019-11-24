@@ -1,0 +1,248 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:12
+ # Threads per group:24
+ # SIZE:9000
+ # G:   330
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ ** Launching SynergyWrapper process@4...
+ ** Launching SynergyWrapper process@5...
+ ** Launching SynergyWrapper process@6...
+ ** Launching SynergyWrapper process@7...
+ ** Launching SynergyWrapper process@8...
+ ** Launching SynergyWrapper process@9...
+ ** Launching SynergyWrapper process@10...
+ ** Launching SynergyWrapper process@11...
+ ** Launching SynergyWrapper process@12...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 330[0]
+Sending part 660[1]
+Sending part 990[2]
+Sending part 1320[3]
+Sending part 1650[4]
+Sending part 1980[5]
+Sending part 2310[6]
+Sending part 2640[7]
+Sending part 2970[8]
+Sending part 3300[9]
+Sending part 3630[10]
+Sending part 3960[11]
+Sending part 4290[12]
+Sending part 4620[13]
+Sending part 4950[14]
+Sending part 5280[15]
+Sending part 5610[16]
+Sending part 5940[17]
+Sending part 6270[18]
+Sending part 6600[19]
+Sending part 6930[20]
+Sending part 7260[21]
+Sending part 7590[22]
+Sending part 7920[23]
+Sending part 8250[24]
+Sending part 8580[25]
+Sending part 8910[26]
+master: synchronizing
+Client[1]: sending back to master
+Client[3]: sending back to master
+Client[7]: sending back to master
+Client[8]: sending back to master
+Client[9]: sending back to master
+Client[10]: sending back to master
+Client[11]: sending back to master
+Client[12]: sending back to master
+Client[13]: sending back to master
+Client[15]: sending back to master
+Client[16]: sending back to master
+Client[17]: sending back to master
+Client[18]: sending back to master
+Client[19]: sending back to master
+Client[20]: sending back to master
+Client[21]: sending back to master
+Client[22]: sending back to master
+Client[23]: sending back to master
+Client[2]: sending back to master
+Client[4]: sending back to master
+Client[5]: sending back to master
+Client[6]: sending back to master
+Client[14]: sending back to master
+master: collecting remote 330[0]
+master: collecting remote 660[1]
+master: collecting remote 990[2]
+master: collecting remote 1320[3]
+master: collecting remote 1650[4]
+master: collecting remote 1980[5]
+master: collecting remote 2310[6]
+master: collecting remote 2640[7]
+master: collecting remote 2970[8]
+master: collecting remote 3300[9]
+master: collecting remote 3630[10]
+master: collecting remote 3960[11]
+master: collecting remote 4290[12]
+master: collecting remote 4620[13]
+master: collecting remote 4950[14]
+master: collecting remote 5280[15]
+master: collecting remote 5610[16]
+master: collecting remote 5940[17]
+master: collecting remote 6270[18]
+master: collecting remote 6600[19]
+master: collecting remote 6930[20]
+master: collecting remote 7260[21]
+master: collecting remote 7590[22]
+master: collecting remote 7920[23]
+master: collecting remote 8250[24]
+master: collecting remote 8580[25]
+master: collecting remote 8910[26]
+ === Time spent: 48.102431 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:12
+ # Threads per group:24
+ # SIZE:9000
+ # G:   330
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ ** Launching SynergyWrapper process@4...
+ ** Launching SynergyWrapper process@5...
+ ** Launching SynergyWrapper process@6...
+ ** Launching SynergyWrapper process@7...
+ ** Launching SynergyWrapper process@8...
+ ** Launching SynergyWrapper process@9...
+ ** Launching SynergyWrapper process@10...
+ ** Launching SynergyWrapper process@11...
+ ** Launching SynergyWrapper process@12...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 330[0]
+Sending part 660[1]
+Sending part 990[2]
+Sending part 1320[3]
+Sending part 1650[4]
+Sending part 1980[5]
+Sending part 2310[6]
+Sending part 2640[7]
+Sending part 2970[8]
+Sending part 3300[9]
+Sending part 3630[10]
+Sending part 3960[11]
+Sending part 4290[12]
+Sending part 4620[13]
+Sending part 4950[14]
+Sending part 5280[15]
+Sending part 5610[16]
+Sending part 5940[17]
+Sending part 6270[18]
+Sending part 6600[19]
+Sending part 6930[20]
+Sending part 7260[21]
+Sending part 7590[22]
+Sending part 7920[23]
+Sending part 8250[24]
+Sending part 8580[25]
+Sending part 8910[26]
+master: synchronizing
+Client[7]: sending back to master
+Client[8]: sending back to master
+Client[10]: sending back to master
+Client[11]: sending back to master
+Client[12]: sending back to master
+Client[14]: sending back to master
+Client[15]: sending back to master
+Client[16]: sending back to master
+Client[17]: sending back to master
+Client[18]: sending back to master
+Client[20]: sending back to master
+Client[21]: sending back to master
+Client[22]: sending back to master
+Client[23]: sending back to master
+Client[1]: sending back to master
+Client[2]: sending back to master
+Client[4]: sending back to master
+Client[5]: sending back to master
+Client[6]: sending back to master
+Client[9]: sending back to master
+Client[13]: sending back to master
+Client[3]: sending back to master
+Client[19]: sending back to master
+master: collecting remote 330[0]
+master: collecting remote 660[1]
+master: collecting remote 990[2]
+master: collecting remote 1320[3]
+master: collecting remote 1650[4]
+master: collecting remote 1980[5]
+master: collecting remote 2310[6]
+master: collecting remote 2640[7]
+master: collecting remote 2970[8]
+master: collecting remote 3300[9]
+master: collecting remote 3630[10]
+master: collecting remote 3960[11]
+master: collecting remote 4290[12]
+master: collecting remote 4620[13]
+master: collecting remote 4950[14]
+master: collecting remote 5280[15]
+master: collecting remote 5610[16]
+master: collecting remote 5940[17]
+master: collecting remote 6270[18]
+master: collecting remote 6600[19]
+master: collecting remote 6930[20]
+master: collecting remote 7260[21]
+master: collecting remote 7590[22]
+master: collecting remote 7920[23]
+master: collecting remote 8250[24]
+master: collecting remote 8580[25]
+master: collecting remote 8910[26]
+ === Time spent: 50.041850 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============

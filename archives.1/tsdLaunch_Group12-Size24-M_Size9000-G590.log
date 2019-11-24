@@ -1,0 +1,289 @@
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 1200
+-rw------- 1 cc cc 802064 Mar 27 14:43 synergy4_123371.log
+-rw------- 1 cc cc   6353 Mar 27 14:43 synergy4_p2pmd_123371.log
+-rw------- 1 cc cc    768 Mar 27 14:41 synergy4_parser_123371.log
+-rw------- 1 cc cc 410300 Mar 27 14:43 synergy4_tsd_123371.log
+srwxrwxr-x 1 cc cc      0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 7832
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:43 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:43 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 1 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc       123909  0.0  0.0 144504  7044 ?        Sl   14:43   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng1.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc       123911  0.0  0.0  12944   932 ?        S    14:43   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 24
+-rw------- 1 cc cc 11645 Mar 27 14:43 synergy4_p2pmd_112617.log
+-rw------- 1 cc cc   768 Mar 27 14:41 synergy4_parser_112617.log
+-rw------- 1 cc cc  7107 Mar 27 14:43 synergy4_tsd_112617.log
+srwxrwxr-x 1 cc cc     0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 2 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc       113214  0.0  0.0 144504  4936 ?        Sl   14:43   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng2.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc       113216  0.0  0.0  12944  1088 ?        S    14:43   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 32
+-rw------- 1 cc cc 19413 Mar 27 14:43 synergy4_p2pmd_111894.log
+-rw------- 1 cc cc   764 Mar 27 14:41 synergy4_parser_111894.log
+-rw------- 1 cc cc  7107 Mar 27 14:43 synergy4_tsd_111894.log
+srwxrwxr-x 1 cc cc     0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 3 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc       112484  0.0  0.0 144504  4904 ?        Sl   14:43   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng3.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc       112486  0.0  0.0  12944   940 ?        S    14:43   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2716 Mar 27 14:43 synergy4_p2pmd_95619.log
+-rw------- 1 cc cc  768 Mar 27 14:41 synergy4_parser_95619.log
+-rw------- 1 cc cc 3973 Mar 27 14:42 synergy4_tsd_95619.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 4 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        96212  0.0  0.0 144504  5116 ?        Sl   14:43   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng4.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        96214  0.0  0.0  12944   984 ?        S    14:43   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2716 Mar 27 14:43 synergy4_p2pmd_94714.log
+-rw------- 1 cc cc  768 Mar 27 14:41 synergy4_parser_94714.log
+-rw------- 1 cc cc 3973 Mar 27 14:42 synergy4_tsd_94714.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 5 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        95308  0.0  0.0 144504  7060 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng5.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        95310  0.0  0.0  12944   936 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2819 Mar 27 14:43 synergy4_p2pmd_94408.log
+-rw------- 1 cc cc  768 Mar 27 14:41 synergy4_parser_94408.log
+-rw------- 1 cc cc 3973 Mar 27 14:42 synergy4_tsd_94408.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 6 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        95002  0.0  0.0 144504  7132 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng6.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        95004  0.0  0.0  12944  1084 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2819 Mar 27 14:43 synergy4_p2pmd_90108.log
+-rw------- 1 cc cc  768 Mar 27 14:41 synergy4_parser_90108.log
+-rw------- 1 cc cc 3973 Mar 27 14:42 synergy4_tsd_90108.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 7 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        90701  0.0  0.0 144504  5056 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng7.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        90703  0.0  0.0  12944  1088 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2819 Mar 27 14:43 synergy4_p2pmd_90307.log
+-rw------- 1 cc cc  768 Mar 27 14:41 synergy4_parser_90307.log
+-rw------- 1 cc cc 3973 Mar 27 14:42 synergy4_tsd_90307.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 8 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        90895  0.0  0.0 144504  5020 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng8.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        90897  0.0  0.0  12944  1028 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2820 Mar 27 14:43 synergy4_p2pmd_83933.log
+-rw------- 1 cc cc  770 Mar 27 14:41 synergy4_parser_83933.log
+-rw------- 1 cc cc 3973 Mar 27 14:42 synergy4_tsd_83933.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 9 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        84526  0.0  0.0 144504  5040 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng9.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        84528  0.0  0.0  12944   940 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2820 Mar 27 14:43 synergy4_p2pmd_84879.log
+-rw------- 1 cc cc  770 Mar 27 14:41 synergy4_parser_84879.log
+-rw------- 1 cc cc 3973 Mar 27 14:42 synergy4_tsd_84879.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 10 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        85477  0.0  0.0 144504  5020 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng10.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        85479  0.0  0.0  12944   928 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2821 Mar 27 14:43 synergy4_p2pmd_84211.log
+-rw------- 1 cc cc  772 Mar 27 14:41 synergy4_parser_84211.log
+-rw------- 1 cc cc 3973 Mar 27 14:43 synergy4_tsd_84211.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 11 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        84801  0.0  0.0 144504  4936 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng11.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        84803  0.0  0.0  12944   956 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 
+ === before clean up === 
+~~~~~~ ls -l /tmp
+total 12
+-rw------- 1 cc cc 2923 Mar 27 14:43 synergy4_p2pmd_84800.log
+-rw------- 1 cc cc  770 Mar 27 14:41 synergy4_parser_84800.log
+-rw------- 1 cc cc 3973 Mar 27 14:43 synergy4_tsd_84800.log
+srwxrwxr-x 1 cc cc    0 Mar 27 14:41 tsd1
+~~~~~~ ls -l /dev/shm
+total 16
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-pull
+-rwxrwxr-x 1 cc cc 4000000 Mar 27 14:41 matrix-push
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-pull-wsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-rsem
+-rwxrwxr-x 1 cc cc      32 Mar 27 14:41 sem.matrix-push-wsem
+ === clean up ===
+total 0
+total 0
+ === done ===
+ *============== Launching remote tsd at 12 =============* 
+ ====== tsd launch complete. You have 1 tsd instance. ====== 
+cc        85391  0.0  0.0 144504  5060 ?        Sl   14:44   0:00 /home/cc/Synergy4/s4c00/cmake-build-debug/sng_tsd /home/cc/Synergy4/s4c00/etc/sng12.json /home/cc/Synergy4/s4c00/etc/synergy-log.conf
+cc        85393  0.0  0.0  12944   940 ?        S    14:44   0:00 grep sng_tsd
+ ============================================================ 

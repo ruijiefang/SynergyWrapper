@@ -1,0 +1,70 @@
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:5
+ # SIZE:8000
+ # G:   1200
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 1200[0]
+Sending part 2400[1]
+Sending part 3600[2]
+Sending part 4800[3]
+Sending part 6000[4]
+Sending part 7200[5]
+master: synchronizing
+Client[3]: sending back to master
+Client[4]: sending back to master
+Client[1]: sending back to master
+Client[2]: sending back to master
+master: collecting remote 1200[0]
+master: collecting remote 2400[1]
+master: collecting remote 3600[2]
+master: collecting remote 4800[3]
+master: collecting remote 6000[4]
+master: collecting remote 7200[5]
+ === Time spent: 53.923984 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============
+ ===== launching single host matrix multiplication program ===== 
+ # MPI Groups:3
+ # Threads per group:5
+ # SIZE:8000
+ # G:   1200
+ ###########################
+ ** Launching SynergyWrapper process@2...
+ ** Launching SynergyWrapper process@3...
+ts: attempting to receive an integer
+ts: local tsd is master
+Sending part 1200[0]
+Sending part 2400[1]
+Sending part 3600[2]
+Sending part 4800[3]
+Sending part 6000[4]
+Sending part 7200[5]
+master: synchronizing
+Client[2]: sending back to master
+Client[3]: sending back to master
+Client[4]: sending back to master
+Client[1]: sending back to master
+master: collecting remote 1200[0]
+master: collecting remote 2400[1]
+master: collecting remote 3600[2]
+master: collecting remote 4800[3]
+master: collecting remote 6000[4]
+master: collecting remote 7200[5]
+ === Time spent: 55.607298 seconds
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+ ====================== Congradulations! Matrix Multiplication successfully performed =================== 
+terminating matrix workers...
+ =========== SUCCESS =============
